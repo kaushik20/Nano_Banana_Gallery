@@ -1,3 +1,6 @@
+Here is the updated code for your `index.html` file, with the `galleryItems` array modified to use your local WebP images.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -61,14 +64,11 @@
     <div id="app" class="container bg-gray-900 rounded-2xl shadow-2xl p-6 w-full max-w-6xl space-y-8 md:p-10">
         <h1 class="text-4xl sm:text-5xl font-extrabold text-center text-white leading-tight">The Nano Banana Gallery</h1>
 
-        <!-- Gallery Section -->
         <div>
             <div id="gallery" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                <!-- Gallery items will be injected here by JavaScript -->
-            </div>
+                </div>
         </div>
 
-        <!-- Detail Modal -->
         <div id="detailModal" class="fixed inset-0 bg-gray-900 bg-opacity-80 hidden items-center justify-center p-4 z-50">
             <div class="modal-content bg-gray-800 rounded-xl p-6 shadow-2xl w-full max-w-3xl border border-gray-700">
                 <div class="flex justify-end">
@@ -91,7 +91,6 @@
             </div>
         </div>
 
-        <!-- Error/Success Message Box -->
         <div id="messageBox" class="fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-2xl transition-all duration-300 transform translate-y-20 opacity-0 z-50">
             <p id="messageText" class="text-white font-medium"></p>
         </div>
@@ -115,17 +114,17 @@
             const messageText = document.getElementById('messageText');
 
             const galleryItems = [
-                { id: '1', url: 'https://placehold.co/400x400/21262d/c9d1d9?text=AI+Art+1', prompt: 'A person standing on a giant smartphone, surrounded by glowing neon light trails.' },
-                { id: '2', url: 'https://placehold.co/400x400/21262d/c9d1d9?text=AI+Art+2', prompt: 'A realistic action figure on a desk next to a computer displaying a 3D wireframe model.' },
-                { id: '3', url: 'https://placehold.co/400x400/21262d/c9d1d9?text=AI+Art+3', prompt: 'A person posing with a miniature model car, with a larger 3D model shown on a computer screen.' },
-                { id: '4', url: 'https://placehold.co/400x400/21262d/c9d1d9?text=AI+Art+4', prompt: 'A cinematic portrait of a man in a blue t-shirt, looking away from the camera with a soft shadow.' },
-                { id: '5', url: 'https://placehold.co/400x400/21262d/c9d1d9?text=AI+Art+5', prompt: 'A portrait of a man in a maroon t-shirt with a strong side light creating a prominent shadow.' },
-                { id: '6', url: 'https://placehold.co/400x400/21262d/c9d1d9?text=AI+Art+6', prompt: 'A warm-toned portrait of a man in a green t-shirt, looking to the side with a prominent shadow on a cream wall.' },
-                { id: '7', url: 'https://placehold.co/400x400/21262d/c9d1d9?text=AI+Art+7', prompt: 'A person with orange headphones standing on a large smartphone, in a futuristic setting.' },
-                { id: '8', url: 'https://placehold.co/400x400/21262d/c9d1d9?text=AI+Art+8', prompt: 'An action figure in a professional suit inside a collector\'s box labeled "The Virtuoso."' },
-                { id: '9', url: 'https://placehold.co/400x400/21262d/c9d1d9?text=AI+Art+9', prompt: 'A professional headshot of a man in a black suit against a dark background.' },
-                { id: '10', url: 'https://placehold.co/400x400/21262d/c9d1d9?text=AI+Art+10', prompt: 'A man in a suit standing in the rain at night with city lights blurred in the background.' },
-                { id: '11', url: 'https://placehold.co/400x400/21262d/c9d1d9?text=AI+Art+11', prompt: 'A lifelike figurine standing on a display platform with a computer screen showing a 3D rendering.' },
+                { id: '1', url: 'WEBP file/image_8afecb.webp', prompt: 'A person standing on a giant smartphone, surrounded by glowing neon light trails.' },
+                { id: '2', url: 'WEBP file/image_2.webp', prompt: 'A realistic action figure on a desk next to a computer displaying a 3D wireframe model.' },
+                { id: '3', url: 'WEBP file/image_3.webp', prompt: 'A person posing with a miniature model car, with a larger 3D model shown on a computer screen.' },
+                { id: '4', url: 'WEBP file/image_4.webp', prompt: 'A cinematic portrait of a man in a blue t-shirt, looking away from the camera with a soft shadow.' },
+                { id: '5', url: 'WEBP file/image_5.webp', prompt: 'A portrait of a man in a maroon t-shirt with a strong side light creating a prominent shadow.' },
+                { id: '6', url: 'WEBP file/image_6.webp', prompt: 'A warm-toned portrait of a man in a green t-shirt, looking to the side with a prominent shadow on a cream wall.' },
+                { id: '7', url: 'WEBP file/image_7.webp', prompt: 'A person with orange headphones standing on a large smartphone, in a futuristic setting.' },
+                { id: '8', url: 'WEBP file/image_8.webp', prompt: 'An action figure in a professional suit inside a collector\'s box labeled "The Virtuoso."' },
+                { id: '9', url: 'WEBP file/image_9.webp', prompt: 'A professional headshot of a man in a black suit against a dark background.' },
+                { id: '10', url: 'WEBP file/image_10.webp', prompt: 'A man in a suit standing in the rain at night with city lights blurred in the background.' },
+                { id: '11', url: 'WEBP file/image_11.webp', prompt: 'A lifelike figurine standing on a display platform with a computer screen showing a 3D rendering.' },
             ];
 
             const showMessage = (text, isError = false) => {
