@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nano Banana Gallery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117;
+            background-image: radial-gradient(at 50% 50%, rgba(26, 41, 59, 0.8), rgba(13, 17, 23, 1));
+            color: #c9d1d9;
+        }
+        .container {
+            border: 1px solid #30363d;
+        }
+        .gallery-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #30363d;
+            background-color: #161b22;
+        }
+        .gallery-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        }
+        .gallery-card img {
+            transition: transform 0.3s ease;
+        }
+        .gallery-card:hover img {
+            transform: scale(1.05);
+        }
+        .modal-content {
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            transform: translateY(-50px);
+            opacity: 0;
+        }
+        .modal-show .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-4 sm:p-8">
+
+    <div id="app" class="container bg-gray-900 rounded-2xl shadow-2xl p-6 w-full max-w-6xl space-y-8 md:p-10">
+        <h1 class="text-4xl sm:text-5xl font-extrabold text-center text-white leading-tight">The Nano Banana Gallery</h1>
+
+        <!-- Gallery Section -->
+        <div>
+            <div id="gallery" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                <!-- Gallery items will be injected here by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Detail Modal -->
+        <div id="detailModal" class="fixed inset-0 bg-gray-900 bg-opacity-80 hidden items-center justify-center p-4 z-50">
+            <div class="modal-content bg-gray-800 rounded-xl p-6 shadow-2xl w-full max-w-3xl border border-gray-700">
+                <div class="flex justify-end">
+                    <button id="closeModalBtn" class="text-gray-400 hover:text-white text-3xl font-light">&times;</button>
+                </div>
+                <div class="text-center space-y-6">
+                    <img id="modalImage" src="" alt="Detail Image" class="w-full h-auto rounded-lg shadow-lg max-h-[60vh] object-contain border-4 border-gray-700">
+                    <p id="modalPrompt" class="text-lg text-gray-200 font-medium p-3 bg-gray-700 rounded-md"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error/Success Message Box -->
+        <div id="messageBox" class="fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-2xl transition-all duration-300 transform translate-y-20 opacity-0 z-50">
+            <p id="messageText" class="text-white font-medium"></p>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const galleryDiv = document.getElementById('gallery');
+            const detailModal = document.getElementById('detailModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalPrompt = document.getElementById('modalPrompt');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+
+            const galleryItems = [
+                { id: '1', url: 'uploaded:1757708247652.jpg-1fbe2740-71a1-4bfa-b38e-8297dbfb7bd4', prompt: 'An abstract depiction of flowing, liquid color in a surreal space.' },
+                { id: '2', url: 'uploaded:1757708917654.jpg-351d7ada-0956-474d-9565-b3677a84069e', prompt: 'A fantastical landscape with glowing, alien flora and a lone traveler.' },
+                { id: '3', url: 'uploaded:1757709208322.jpg-a9343079-7828-4a24-ad88-7e667dce8ec2', prompt: 'A deconstructed, surrealist portrait of a face melting into a swirl of colors.' },
+                { id: '4', url: 'uploaded:1757709665136.jpg-204267d8-94cb-46bf-b38c-8027a8395edc', prompt: 'A futuristic character with glowing eyes, shrouded in a dark, atmospheric cloak.' },
+                { id: '5', url: 'uploaded:1757709822282.jpg-fbd3d19d-56bf-47b8-9168-c30e845d8364', prompt: 'An artistic portrait of a woman with long, intricate hair flowing into a magical landscape.' },
+                { id: '6', url: 'uploaded:1757709830059.jpg-7dac1697-3569-4267-8b5f-bed540938e75', prompt: 'A cyberpunk hacker in a dark alley, illuminated by the glow of a mysterious terminal.' },
+                { id: '7', url: 'uploaded:1757711377060.jpg-9031123e-e810-4aea-9a05-f5e65f935b00', prompt: 'A demonic or mythical creature with horns and fiery eyes, in a dramatic, dark fantasy style.' },
+                { id: '8', url: 'uploaded:1757713384637.jpg-497aa558-f9a6-441b-a828-f42b213b1fb8', prompt: 'A sleek, black futuristic vehicle with glowing blue accents in a vast desert.' },
+                { id: '9', url: 'uploaded:1757714399151.jpg-f99cd7ae-2528-4bae-82e3-a25539c3c3e1', prompt: 'A vibrant, detailed city floating amongst surreal structures in a high fantasy setting.' },
+                { id: '10', url: 'uploaded:file_00000000a94861fa98248aadaf9d0a98.jpg-9a9cf8cd-529a-4fd4-9ccc-40aef7f9ca38', prompt: 'A stoic, futuristic character with a mechanical arm and a red glowing eye.' },
+            ];
+
+            const renderGallery = () => {
+                galleryDiv.innerHTML = '';
+                galleryItems.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'gallery-card rounded-xl shadow-lg p-2 cursor-pointer';
+                    card.innerHTML = `
+                        <img src="${item.url}" alt="Gallery Image" class="w-full h-48 object-cover rounded-md mb-2">
+                        <p class="text-sm text-gray-400 truncate px-2">${item.prompt}</p>
+                    `;
+                    card.addEventListener('click', () => showDetails(item));
+                    galleryDiv.appendChild(card);
+                });
+            };
+
+            const showDetails = (item) => {
+                modalImage.src = item.url;
+                modalPrompt.textContent = item.prompt;
+                detailModal.classList.remove('hidden');
+                detailModal.classList.add('flex', 'modal-show');
+            };
+
+            const closeModal = () => {
+                detailModal.classList.add('hidden');
+                detailModal.classList.remove('flex', 'modal-show');
+            };
+
+            closeModalBtn.addEventListener('click', closeModal);
+            window.addEventListener('click', (e) => {
+                if (e.target === detailModal) {
+                    closeModal();
+                }
+            });
+
+            // Initial render
+            renderGallery();
+        });
+    </script>
+</body>
+</html>
