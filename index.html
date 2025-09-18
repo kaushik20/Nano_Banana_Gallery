@@ -175,12 +175,15 @@
                     rewritePromptBtn.disabled = false;
                 }
             };
-
+            
             const generateAudio = async (text) => {
                 listenText.textContent = '';
                 listenLoader.classList.remove('hidden');
                 listenPromptBtn.disabled = true;
-
+                
+                // TODO: Replace 'YOUR_API_KEY' with your actual key
+                const API_KEY = 'YOUR_API_KEY';
+                
                 const payload = {
                     contents: [{ parts: [{ text: text }] }],
                     generationConfig: {
@@ -191,9 +194,9 @@
                     },
                     model: "gemini-2.5-flash-preview-tts"
                 };
-
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=`AIzaSyBNj9ltfaYDan_zvN6_AE0VxTn3DZi1GPs';
-
+                
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${API_KEY}`;
+                
                 try {
                     const response = await fetch(apiUrl, {
                         method: 'POST',
@@ -204,7 +207,7 @@
                     const part = result?.candidates?.[0]?.content?.parts?.[0];
                     const audioData = part?.inlineData?.data;
                     const mimeType = part?.inlineData?.mimeType;
-
+                    
                     if (audioData && mimeType && mimeType.startsWith("audio/")) {
                         const base64ToArrayBuffer = (base64) => {
                             const binaryString = window.atob(base64);
@@ -215,18 +218,18 @@
                             }
                             return bytes.buffer;
                         };
-
+                        
                         const pcmToWav = (pcmData, sampleRate) => {
                             const pcm16 = new Int16Array(pcmData);
                             const buffer = new ArrayBuffer(44 + pcm16.length * 2);
                             const view = new DataView(buffer);
-
+                            
                             function writeString(view, offset, string) {
                                 for (let i = 0; i < string.length; i++) {
                                     view.setUint8(offset + i, string.charCodeAt(i));
                                 }
                             }
-
+                            
                             let offset = 0;
                             writeString(view, offset, 'RIFF'); offset += 4;
                             view.setUint32(offset, 36 + pcm16.length * 2, true); offset += 4;
@@ -241,7 +244,7 @@
                             view.setUint16(offset, 16, true); offset += 2;
                             writeString(view, offset, 'data'); offset += 4;
                             view.setUint32(offset, pcm16.length * 2, true); offset += 4;
-
+                            
                             const pcmView = new Uint8Array(buffer, 44);
                             for (let i = 0; i < pcm16.length; i++) {
                                 pcmView[i * 2] = pcm16[i] & 0xFF;
@@ -250,7 +253,7 @@
                             
                             return new Blob([buffer], { type: 'audio/wav' });
                         };
-
+                        
                         const sampleRateMatch = mimeType.match(/rate=(\d+)/);
                         const sampleRate = sampleRateMatch ? parseInt(sampleRateMatch[1], 10) : 16000;
                         const pcmData = base64ToArrayBuffer(audioData);
@@ -258,7 +261,7 @@
                         const audioUrl = URL.createObjectURL(wavBlob);
                         const audio = new Audio(audioUrl);
                         audio.play();
-
+                    
                     } else {
                         throw new Error("Invalid audio data received.");
                     }
@@ -271,7 +274,7 @@
                     listenPromptBtn.disabled = false;
                 }
             };
-
+            
             const renderGallery = () => {
                 galleryDiv.innerHTML = '';
                 galleryItems.forEach(item => {
