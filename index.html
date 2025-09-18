@@ -42,6 +42,18 @@
             transform: translateY(0);
             opacity: 1;
         }
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center p-4 sm:p-8">
@@ -65,6 +77,16 @@
                 <div class="text-center space-y-6">
                     <img id="modalImage" src="" alt="Detail Image" class="w-full h-auto rounded-lg shadow-lg max-h-[60vh] object-contain border-4 border-gray-700">
                     <p id="modalPrompt" class="text-lg text-gray-200 font-medium p-3 bg-gray-700 rounded-md"></p>
+                    <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+                        <button id="rewritePromptBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300 flex items-center gap-2">
+                            <span id="rewriteText">Rewrite Prompt ✨</span>
+                            <div id="rewriteLoader" class="hidden loading-spinner"></div>
+                        </button>
+                        <button id="listenPromptBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300 flex items-center gap-2">
+                            <span id="listenText">Listen to Prompt 🎧</span>
+                            <div id="listenLoader" class="hidden loading-spinner"></div>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -83,19 +105,167 @@
             const modalImage = document.getElementById('modalImage');
             const modalPrompt = document.getElementById('modalPrompt');
             const closeModalBtn = document.getElementById('closeModalBtn');
+            const rewritePromptBtn = document.getElementById('rewritePromptBtn');
+            const listenPromptBtn = document.getElementById('listenPromptBtn');
+            const rewriteText = document.getElementById('rewriteText');
+            const rewriteLoader = document.getElementById('rewriteLoader');
+            const listenText = document.getElementById('listenText');
+            const listenLoader = document.getElementById('listenLoader');
+            const messageBox = document.getElementById('messageBox');
+            const messageText = document.getElementById('messageText');
 
             const galleryItems = [
-                { id: '1', url: 'uploaded:1757708247652.jpg-1fbe2740-71a1-4bfa-b38e-8297dbfb7bd4', prompt: 'An abstract depiction of flowing, liquid color in a surreal space.' },
-                { id: '2', url: 'uploaded:1757708917654.jpg-351d7ada-0956-474d-9565-b3677a84069e', prompt: 'A fantastical landscape with glowing, alien flora and a lone traveler.' },
-                { id: '3', url: 'uploaded:1757709208322.jpg-a9343079-7828-4a24-ad88-7e667dce8ec2', prompt: 'A deconstructed, surrealist portrait of a face melting into a swirl of colors.' },
-                { id: '4', url: 'uploaded:1757709665136.jpg-204267d8-94cb-46bf-b38c-8027a8395edc', prompt: 'A futuristic character with glowing eyes, shrouded in a dark, atmospheric cloak.' },
-                { id: '5', url: 'uploaded:1757709822282.jpg-fbd3d19d-56bf-47b8-9168-c30e845d8364', prompt: 'An artistic portrait of a woman with long, intricate hair flowing into a magical landscape.' },
-                { id: '6', url: 'uploaded:1757709830059.jpg-7dac1697-3569-4267-8b5f-bed540938e75', prompt: 'A cyberpunk hacker in a dark alley, illuminated by the glow of a mysterious terminal.' },
-                { id: '7', url: 'uploaded:1757711377060.jpg-9031123e-e810-4aea-9a05-f5e65f935b00', prompt: 'A demonic or mythical creature with horns and fiery eyes, in a dramatic, dark fantasy style.' },
-                { id: '8', url: 'uploaded:1757713384637.jpg-497aa558-f9a6-441b-a828-f42b213b1fb8', prompt: 'A sleek, black futuristic vehicle with glowing blue accents in a vast desert.' },
-                { id: '9', url: 'uploaded:1757714399151.jpg-f99cd7ae-2528-4bae-82e3-a25539c3c3e1', prompt: 'A vibrant, detailed city floating amongst surreal structures in a high fantasy setting.' },
-                { id: '10', url: 'uploaded:file_00000000a94861fa98248aadaf9d0a98.jpg-9a9cf8cd-529a-4fd4-9ccc-40aef7f9ca38', prompt: 'A stoic, futuristic character with a mechanical arm and a red glowing eye.' },
+                { id: '1', url: 'uploaded:1757708247652.jpg-1fbe2740-71a1-4bfa-b38e-8297dbfb7bd4', prompt: 'A person standing on a giant smartphone, surrounded by glowing neon light trails.' },
+                { id: '2', url: 'uploaded:1757708917654.jpg-351d7ada-0956-474d-9565-b3677a84069e', prompt: 'A realistic action figure on a desk next to a computer displaying a 3D wireframe model.' },
+                { id: '3', url: 'uploaded:1757709208322.jpg-a9343079-7828-4a24-ad88-7e667dce8ec2', prompt: 'A person posing with a miniature model car, with a larger 3D model shown on a computer screen.' },
+                { id: '4', url: 'uploaded:1757709665136.jpg-204267d8-94cb-46bf-b38c-8027a8395edc', prompt: 'A cinematic portrait of a man in a blue t-shirt, looking away from the camera with a soft shadow.' },
+                { id: '5', url: 'uploaded:1757709822282.jpg-fbd3d19d-56bf-47b8-9168-c30e845d8364', prompt: 'A portrait of a man in a maroon t-shirt with a strong side light creating a prominent shadow.' },
+                { id: '6', url: 'uploaded:1757709830059.jpg-7dac1697-3569-4267-8b5f-bed540938e75', prompt: 'A warm-toned portrait of a man in a green t-shirt, looking to the side with a prominent shadow on a cream wall.' },
+                { id: '7', url: 'uploaded:1757711377060.jpg-9031123e-e810-4aea-9a05-f5e65f935b00', prompt: 'A person with orange headphones standing on a large smartphone, in a futuristic setting.' },
+                { id: '8', url: 'uploaded:1757713384637.jpg-497aa558-f9a6-441b-a828-f42b213b1fb8', prompt: 'An action figure in a professional suit inside a collector\'s box labeled "The Virtuoso."' },
+                { id: '9', url: 'uploaded:1757714399151.jpg-f99cd7ae-2528-4bae-82e3-a25539c3c3e1', prompt: 'A professional headshot of a man in a black suit against a dark background.' },
+                { id: '10', url: 'uploaded:1757735207482.jpg-169482f0-b3b1-4de1-98aa-8268f87fc035', prompt: 'A man in a suit standing in the rain at night with city lights blurred in the background.' },
+                { id: '11', url: 'uploaded:file_00000000a94861fa98248aadaf9d0a98.jpg-9a9cf8cd-529a-4fd4-9ccc-40aef7f9ca38', prompt: 'A lifelike figurine standing on a display platform with a computer screen showing a 3D rendering.' },
             ];
+
+            const showMessage = (text, isError = false) => {
+                messageText.textContent = text;
+                messageBox.classList.remove('translate-y-20', 'opacity-0');
+                messageBox.classList.add('translate-y-0', 'opacity-100');
+                messageBox.classList.toggle('bg-red-600', isError);
+                messageBox.classList.toggle('bg-blue-600', !isError);
+                setTimeout(() => {
+                    messageBox.classList.remove('translate-y-0', 'opacity-100');
+                    messageBox.classList.add('translate-y-20', 'opacity-0');
+                }, 3000);
+            };
+
+            const generateNewPrompt = async (originalPrompt) => {
+                rewriteText.textContent = '';
+                rewriteLoader.classList.remove('hidden');
+                rewritePromptBtn.disabled = true;
+
+                const userQuery = `Rewrite the following image prompt to be more creative and descriptive: "${originalPrompt}"`;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=`;
+                const payload = {
+                    contents: [{ parts: [{ text: userQuery }] }],
+                    tools: [{ "google_search": {} }],
+                };
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+                    const newPrompt = result?.candidates?.[0]?.content?.parts?.[0]?.text || "Failed to generate new prompt.";
+                    modalPrompt.textContent = newPrompt;
+                } catch (error) {
+                    console.error("Error generating new prompt:", error);
+                    showMessage("Failed to rewrite prompt.", true);
+                } finally {
+                    rewriteText.textContent = 'Rewrite Prompt ✨';
+                    rewriteLoader.classList.add('hidden');
+                    rewritePromptBtn.disabled = false;
+                }
+            };
+
+            const generateAudio = async (text) => {
+                listenText.textContent = '';
+                listenLoader.classList.remove('hidden');
+                listenPromptBtn.disabled = true;
+
+                const payload = {
+                    contents: [{ parts: [{ text: text }] }],
+                    generationConfig: {
+                        responseModalities: ["AUDIO"],
+                        speechConfig: {
+                            voiceConfig: { prebuiltVoiceConfig: { voiceName: "Puck" } }
+                        }
+                    },
+                    model: "gemini-2.5-flash-preview-tts"
+                };
+
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+                    const part = result?.candidates?.[0]?.content?.parts?.[0];
+                    const audioData = part?.inlineData?.data;
+                    const mimeType = part?.inlineData?.mimeType;
+
+                    if (audioData && mimeType && mimeType.startsWith("audio/")) {
+                        const base64ToArrayBuffer = (base64) => {
+                            const binaryString = window.atob(base64);
+                            const len = binaryString.length;
+                            const bytes = new Uint8Array(len);
+                            for (let i = 0; i < len; i++) {
+                                bytes[i] = binaryString.charCodeAt(i);
+                            }
+                            return bytes.buffer;
+                        };
+
+                        const pcmToWav = (pcmData, sampleRate) => {
+                            const pcm16 = new Int16Array(pcmData);
+                            const buffer = new ArrayBuffer(44 + pcm16.length * 2);
+                            const view = new DataView(buffer);
+
+                            function writeString(view, offset, string) {
+                                for (let i = 0; i < string.length; i++) {
+                                    view.setUint8(offset + i, string.charCodeAt(i));
+                                }
+                            }
+
+                            let offset = 0;
+                            writeString(view, offset, 'RIFF'); offset += 4;
+                            view.setUint32(offset, 36 + pcm16.length * 2, true); offset += 4;
+                            writeString(view, offset, 'WAVE'); offset += 4;
+                            writeString(view, offset, 'fmt '); offset += 4;
+                            view.setUint32(offset, 16, true); offset += 4;
+                            view.setUint16(offset, 1, true); offset += 2;
+                            view.setUint16(offset, 1, true); offset += 2;
+                            view.setUint32(offset, sampleRate, true); offset += 4;
+                            view.setUint32(offset, sampleRate * 2, true); offset += 4;
+                            view.setUint16(offset, 2, true); offset += 2;
+                            view.setUint16(offset, 16, true); offset += 2;
+                            writeString(view, offset, 'data'); offset += 4;
+                            view.setUint32(offset, pcm16.length * 2, true); offset += 4;
+
+                            const pcmView = new Uint8Array(buffer, 44);
+                            for (let i = 0; i < pcm16.length; i++) {
+                                pcmView[i * 2] = pcm16[i] & 0xFF;
+                                pcmView[i * 2 + 1] = (pcm16[i] >> 8) & 0xFF;
+                            }
+                            
+                            return new Blob([buffer], { type: 'audio/wav' });
+                        };
+
+                        const sampleRateMatch = mimeType.match(/rate=(\d+)/);
+                        const sampleRate = sampleRateMatch ? parseInt(sampleRateMatch[1], 10) : 16000;
+                        const pcmData = base64ToArrayBuffer(audioData);
+                        const wavBlob = pcmToWav(pcmData, sampleRate);
+                        const audioUrl = URL.createObjectURL(wavBlob);
+                        const audio = new Audio(audioUrl);
+                        audio.play();
+
+                    } else {
+                        throw new Error("Invalid audio data received.");
+                    }
+                } catch (error) {
+                    console.error("Error generating audio:", error);
+                    showMessage("Failed to generate audio.", true);
+                } finally {
+                    listenText.textContent = 'Listen to Prompt 🎧';
+                    listenLoader.classList.add('hidden');
+                    listenPromptBtn.disabled = false;
+                }
+            };
 
             const renderGallery = () => {
                 galleryDiv.innerHTML = '';
@@ -116,6 +286,8 @@
                 modalPrompt.textContent = item.prompt;
                 detailModal.classList.remove('hidden');
                 detailModal.classList.add('flex', 'modal-show');
+                rewritePromptBtn.onclick = () => generateNewPrompt(modalPrompt.textContent);
+                listenPromptBtn.onclick = () => generateAudio(modalPrompt.textContent);
             };
 
             const closeModal = () => {
